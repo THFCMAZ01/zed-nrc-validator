@@ -26,58 +26,75 @@ describe('NRC Validator — Level 1 (Format Validation)', () => {
   test('TC-05: rejects wrong separator (dash instead of slash)', () => {
     const result = validateNRC("613475-61-1")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('INVALID_FORMAT')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_FORMAT')
+    }
   })
 
   test('TC-06: rejects sequence with only 5 digits', () => {
     const result = validateNRC("61347/61/1")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
+    }
   })
 
   test('TC-07: rejects sequence with 7 digits', () => {
     const result = validateNRC("6134756/61/1")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
+    }
   })
 
   test('TC-08: rejects district code with 3 digits', () => {
     const result = validateNRC("613475/611/1")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('INVALID_DISTRICT_LENGTH')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_DISTRICT_LENGTH')
+    }
   })
 
   test('TC-09: rejects nationality digit 0', () => {
     const result = validateNRC("613475/61/0")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('INVALID_NATIONALITY')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_NATIONALITY')
+    }
   })
 
   test('TC-10: rejects nationality digit 4', () => {
     const result = validateNRC("613475/61/4")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('INVALID_NATIONALITY')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_NATIONALITY')
+    }
   })
 
   test('TC-11: rejects empty string', () => {
     const result = validateNRC("")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('EMPTY_INPUT')
+    if (!result.valid) {
+      expect(result.error.code).toBe('EMPTY_INPUT')
+    }
   })
 
   test('TC-12: rejects null cast to string', () => {
     const result = validateNRC(null as unknown as string)
     expect(result.valid).toBe(false)
-    expect(result.error.code).toMatch(/INVALID|EMPTY/)
+    if (!result.valid) {
+      expect(result.error.code).toMatch(/INVALID|EMPTY/)
+    }
   })
 
   test('TC-13: rejects letters in sequence', () => {
     const result = validateNRC("61347A/61/1")
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('NON_NUMERIC_SEQUENCE')
+    if (!result.valid) {
+      expect(result.error.code).toBe('NON_NUMERIC_SEQUENCE')
+    }
   })
 })
-
 
 describe('NRC Validator — Level 2 (Strict Mode)', () => {
 
@@ -89,7 +106,9 @@ describe('NRC Validator — Level 2 (Strict Mode)', () => {
   test('TC-15: strict mode rejects unknown district code', () => {
     const result = validateNRC("613475/00/1", { strict: true })
     expect(result.valid).toBe(false)
-    expect(result.error.code).toBe('UNKNOWN_DISTRICT')
+    if (!result.valid) {
+      expect(result.error.code).toBe('UNKNOWN_DISTRICT')
+    }
   })
 
   test('TC-16: strict mode off by default — unknown district passes Level 1', () => {

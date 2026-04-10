@@ -21,6 +21,7 @@ import { GeneratedNRC } from './types'
  * 
  * Why these choices:
  * - Sequence is random so each call produces different NRC
+ * 
  * - Fixed district ensures it's always valid (tests will pass)
  * - Fixed nationality ensures it's always valid (tests will pass)
  * - In a real app, you might accept these as parameters

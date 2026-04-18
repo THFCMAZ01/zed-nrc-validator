@@ -36,7 +36,8 @@ export function generateNRC(): GeneratedNRC {
     .toString()
     .padStart(6, '0')
 
-  // Fixed choice: Ndola (district code 61) - a valid Zambian district
+  // Fixed choice: Ndola (district code 61, Copperbelt province) - a valid Zambian district
+  // This ensures ALL generated NRCs pass validation including strict mode
   const districtCode = 61
   const district = districtCode.toString().padStart(2, '0')
 

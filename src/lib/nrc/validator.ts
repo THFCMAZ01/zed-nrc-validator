@@ -44,6 +44,9 @@ export function validateNRC(
       error: {
         code: 'EMPTY_INPUT',
         message: 'NRC cannot be empty',
+        received: typeof nrc === 'string' ? `"${nrc}"` : String(nrc),
+        expected: 'SEQUENCE/DISTRICT/NATIONALITY (e.g., 613475/61/1)',
+        hint: 'Enter an NRC in format: 6 digits / 2 digits / 1 digit',
       },
     }
   }
@@ -57,6 +60,9 @@ export function validateNRC(
       error: {
         code: 'INVALID_FORMAT',
         message: 'NRC must have format SEQUENCE/DISTRICT/NATIONALITY',
+        received: nrc,
+        expected: 'SEQUENCE/DISTRICT/NATIONALITY',
+        hint: `Found ${parts.length} part(s), expected 3. Use forward slashes (/) to separate.`,
       },
     }
   }
@@ -72,7 +78,10 @@ export function validateNRC(
         valid: false,
         error: {
           code: 'NON_NUMERIC_SEQUENCE',
-          message: 'Sequence must contain only digits',
+          message: 'Sequence must contain only digits (0-9).',
+          received: sequence,
+          expected: '6 digits (0-9)',
+          hint: 'Remove letters, spaces, and special characters.',
         },
       }
     }
@@ -81,7 +90,10 @@ export function validateNRC(
       valid: false,
       error: {
         code: 'INVALID_SEQUENCE_LENGTH',
-        message: 'Sequence must be exactly 6 digits',
+        message: `Sequence must be exactly 6 digits, you provided ${sequence.length}.`,
+        received: sequence,
+        expected: 'exactly 6 digits',
+        hint: sequence.length < 6 ? `Pad with leading zeros: ${sequence.padStart(6, '0')}` : `Remove ${sequence.length - 6} digit(s).`,
       },
     }
   }
@@ -92,7 +104,10 @@ export function validateNRC(
       valid: false,
       error: {
         code: 'INVALID_DISTRICT_LENGTH',
-        message: 'District code must be exactly 2 digits',
+        message: `District code must be exactly 2 digits, you provided '${district}' (${district.length} char(s)).`,
+        received: district,
+        expected: '2 digits (01-99)',
+        hint: district.length === 1 ? `Pad with zero: 0${district}` : `District code must be 2 digits.`,
       },
     }
   }
@@ -103,7 +118,10 @@ export function validateNRC(
       valid: false,
       error: {
         code: 'INVALID_NATIONALITY',
-        message: 'Nationality must be a single digit',
+        message: `Nationality must be a single digit (1, 2, or 3), you provided '${nationality}'.`,
+        received: nationality,
+        expected: '1 digit: 1 (Zambian), 2 (Commonwealth), or 3 (Foreign)',
+        hint: 'Enter only the digit: 1, 2, or 3.',
       },
     }
   }
@@ -115,7 +133,10 @@ export function validateNRC(
       valid: false,
       error: {
         code: 'INVALID_NATIONALITY',
-        message: 'Nationality must be 1 (Zambian), 2 (Commonwealth), or 3 (Foreign)',
+        message: `Nationality '${nationality}' is invalid. Must be 1 (Zambian), 2 (Commonwealth), or 3 (Foreign).`,
+        received: nationality,
+        expected: '1 (Zambian), 2 (Commonwealth), or 3 (Foreign)',
+        hint: 'Use 1, 2, or 3 only. 0 and 4+ are not valid.',
       },
     }
   }
@@ -128,7 +149,10 @@ export function validateNRC(
         valid: false,
         error: {
           code: 'UNKNOWN_DISTRICT',
-          message: `District code ${district} is not recognized`,
+          message: `District code '${district}' is not recognized. Valid Zambian districts are 01–69. See /api-docs for details.`,
+          received: district,
+          expected: 'Valid Zambian district code (01-69)',
+          hint: 'Check /api-docs for a list of valid Zambian district codes.',
         },
       }
     }

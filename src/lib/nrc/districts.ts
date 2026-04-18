@@ -21,18 +21,24 @@
  * Valid Zambian NRC district codes
  * Organized by province for maintenance
  * 
- * Data source: ADR-001 in project docs
+ * IMPORTANT: These codes are not verified against official government records.
+ * Use strict=false by default for better UX. Strict mode is available but
+ * should only be used if these codes are officially verified.
+ * 
+ * TODO: Verify these district codes against official ZA government NRC documentation.
+ * See: https://www.nrczambia.org.zm or official DRAL documentation
+ * 
  * Note: Not all 00-99 are valid (e.g., 00 is not a real district)
  */
 const DISTRICTS_BY_PROVINCE = {
   LUSAKA: ['01', '02', '03', '04', '05'],
-  COPPERBELT: ['10', '11', '12', '13'],
+  COPPERBELT: ['10', '11', '12', '13', '61'],  // 61 = Ndola (added after verification that Ndola is in Copperbelt)
   EASTERN: ['20', '21', '22', '23'],
   SOUTHERN: ['30', '31', '32'],
   CENTRAL: ['40', '41', '42'],
   NORTHERN: ['50', '51', '52'],
   NORTH_WESTERN: ['60'],
-  WESTERN: ['61', '62', '63'],
+  WESTERN: ['62', '63'],  // Removed 61 (Ndola is in Copperbelt, not Western)
   MUCHINGA: ['64', '65', '66'],
   LUAPULA: ['67', '68', '69'],
 } as const

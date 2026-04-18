@@ -38,6 +38,11 @@ export interface ValidationSuccess {
  * When valid=false, error MUST exist with code and message
  * Machine-readable code for routing/handling, human-readable message
  * 
+ * Diagnostic fields (received, expected, hint):
+ * - received: the actual invalid input the user provided
+ * - expected: what format/range is correct
+ * - hint: helpful guidance for fixing the error
+ * 
  * Error codes examples:
  * - EMPTY_INPUT: no NRC provided
  * - INVALID_FORMAT: doesn't have X/XX/X shape
@@ -46,10 +51,12 @@ export interface ValidationSuccess {
  * - UNKNOWN_DISTRICT: district code not in valid list (strict mode only)
  * 
  * Example:
- *   const result = validateNRC("not-valid")
+ *   const result = validateNRC("61347/61/1")
  *   if (!result.valid) {
- *     // TypeScript knows error EXISTS here
- *     console.log(result.error.code)  // e.g., "INVALID_FORMAT"
+ *     // TypeScript knows error EXISTS here and has diagnostic info
+ *     console.log(result.error.code)       // "INVALID_SEQUENCE_LENGTH"
+ *     console.log(result.error.received)   // "61347"
+ *     console.log(result.error.expected)   // "6 digits"
  *   }
  */
 export interface ValidationError {
@@ -57,6 +64,9 @@ export interface ValidationError {
   error: {
     code: string        // Machine-readable: used for programmatic response
     message: string     // Human-readable: shown to users
+    received?: string   // What the user actually provided (for diagnostics)
+    expected?: string   // What format is correct
+    hint?: string       // Helpful guidance to fix the error
   }
 }
 

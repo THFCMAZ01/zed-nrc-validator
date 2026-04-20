@@ -9,13 +9,16 @@
  */
 
 import { GeneratedNRC } from './types'
+import { VALID_DISTRICTS } from './districts'
 
 /**
  * Generate a valid random Zambian NRC
  * 
  * Strategy:
  * - Use a random 6-digit sequence (000000 - 999999)
- * - Always use district code 61 (Ndola) - a valid known district
+ * - Choose a random district from `VALID_DISTRICTS` (keeps generator aligned
+ *   with the strict-mode lookup table)
+ * - Default to district code 61 if the district list is empty
  * - Always use nationality 1 (Zambian)
  * - This ensures ALL generated NRCs pass validation (including strict mode)
  * 
@@ -36,10 +39,15 @@ export function generateNRC(): GeneratedNRC {
     .toString()
     .padStart(6, '0')
 
-  // Fixed choice: Ndola (district code 61, Copperbelt province) - a valid Zambian district
-  // This ensures ALL generated NRCs pass validation including strict mode
-  const districtCode = 61
-  const district = districtCode.toString().padStart(2, '0')
+  // Choose a random district from VALID_DISTRICTS so generated NRCs
+  // remain consistent with strict-mode validation.
+  const districtsArray = Array.from(VALID_DISTRICTS)
+  // Fallback to '61' if no districts are defined
+  const chosenDistrictStr = districtsArray.length > 0
+    ? districtsArray[Math.floor(Math.random() * districtsArray.length)]
+    : '61'
+  const districtCode = parseInt(chosenDistrictStr, 10)
+  const district = chosenDistrictStr.padStart(2, '0')
 
   // Fixed choice: Nationality 1 = Zambian
   const nationality = 1

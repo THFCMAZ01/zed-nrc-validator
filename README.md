@@ -125,3 +125,6 @@ GitHub: [@THFCMAZ01](https://github.com/THFCMAZ01)
 
 To contribute verified Zambian NRC district codes, open a GitHub issue.
 See [ADR-001](docs/ADR-001-muchinga-province.md) for what is needed.
+
+## Vercel link:
+ https://zed-nrc-validator.vercel.app/ 

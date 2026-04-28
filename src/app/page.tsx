@@ -84,7 +84,7 @@ export default function Home() {
         <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1 mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
           <span className="text-blue-400 text-[10px] font-bold uppercase tracking-widest">
-            Production Ready · Level 2 Strict
+            v1 · Format Validation · Open Source
           </span>
         </div>
         <h1 className="text-5xl font-black tracking-tighter text-white mb-2 italic">

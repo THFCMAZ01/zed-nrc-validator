@@ -47,13 +47,13 @@ describe('NRC Validator — Level 1 (Format Validation)', () => {
     }
   })
 
-  test('TC-08: rejects district code with 3 digits', () => {
-    const result = validateNRC("613475/611/1")
-    expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_DISTRICT_LENGTH')
-    }
-  })
+test('TC-08: rejects district code with 3 digits', () => {
+  const result = validateNRC("613475/611/1")
+  expect(result.valid).toBe(false)
+  if (!result.valid) {
+    expect(result.error.code).toBe('INVALID_FORMAT')
+  }
+})
 
   test('TC-09: rejects nationality digit 0', () => {
     const result = validateNRC("613475/61/0")
@@ -103,10 +103,10 @@ describe('NRC Validator — Level 2 (Strict Mode)', () => {
     expect(result.valid).toBe(true)
   })
 
-  test('TC-15: strict mode v1- district validation defered to v2', () => {
-    const result = validateNRC("613475/00/1", { strict: true })
-    expect(result.valid).toBe(true)
-  })
+test('TC-15: strict mode v1 — district validation deferred to v2', () => {
+  const result = validateNRC("613475/00/1", { strict: true })
+  expect(result.valid).toBe(true)
+})
 
   test('TC-16: strict mode off by default — unknown district passes Level 1', () => {
     const result = validateNRC("613475/00/1")

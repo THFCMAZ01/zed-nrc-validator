@@ -36,7 +36,7 @@ function invalid(
 // ─── Main validation function ───────────────────────────────────
 export function validateNRC(
   input: string,
-  options: NRCVAlidateOptions = {}
+  _options: NRCValidateOptions = {}
 ): NRCValidationResult {
 
   // TC-12: handle null or undefined passed at runtime
@@ -68,30 +68,39 @@ export function validateNRC(
     // Try to split anyway to give a more specific error
     const parts = input.split('/')
 
-    // If we can split into 3 parts, we can give a specific error
-    if (parts.length === 3) {
-      const [seq, district, nat] = parts
+if (parts.length === 3) {
+  const [seq, district, nat] = parts
 
-      // TC-06, TC-07: sequence is not exactly 6 digits
-      if (!/^\d{6}$/.test(seq)) {
-        return invalid(
-          input,
-          'INVALID_SEQUENCE_LENGTH',
-          `Sequence must be exactly 6 digits. Received: "${seq}"`,
-          'sequence'
-        )
-      }
+  // Wrong length — INVALID_SEQUENCE_LENGTH
+  if (seq.length !== 6) {
+    return invalid(
+      input,
+      'INVALID_SEQUENCE_LENGTH',
+      `Sequence must be exactly 6 digits. Got ${seq.length} characters: "${seq}"`,
+      'sequence'
+    )
+  }
 
-      // TC-09, TC-10: nationality digit is not 1, 2, or 3
-      if (district.length === 2 && !/^[123]$/.test(nat)) {
-        return invalid(
-          input,
-          'INVALID_NATIONALITY_DIGIT',
-          `Nationality digit must be 1 (Zambian), 2 (Commonwealth), or 3 (Other). Received: "${nat}"`,
-          'nationalityDigit'
-        )
-      }
-    }
+  // Correct length but contains non-digits — INVALID_FORMAT
+  if (!/^\d{6}$/.test(seq)) {
+    return invalid(
+      input,
+      'INVALID_FORMAT',
+      `Sequence must contain only digits. Received: "${seq}"`,
+      'sequence'
+    )
+  }
+
+  // Correct district length and wrong nationality digit
+  if (district.length === 2 && !/^[123]$/.test(nat)) {
+    return invalid(
+      input,
+      'INVALID_NATIONALITY_DIGIT',
+      `Nationality digit must be 1 (Zambian), 2 (Commonwealth), or 3 (Other). Received: "${nat}"`,
+      'nationalityDigit'
+    )
+  }
+}
 
     // TC-05, TC-08, TC-13: anything else is a general format error
     return invalid(

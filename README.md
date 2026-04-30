@@ -5,8 +5,8 @@ Card (NRC) numbers. Built for developers building on Zambia.
 
 ## Problem Statement
 
-Every Zambian developer building a system with user registration — a
-hospital booking app, a fintech platform, a government portal — needs
+Every Zambian developer building a system with user registration,a
+hospital booking app,a fintech platform, a government portal needs
 to validate NRC numbers. No standardised public tool existed. Each
 developer wrote their own validation logic independently, producing
 inconsistent rules and repeated bugs.

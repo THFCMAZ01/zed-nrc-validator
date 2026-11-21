@@ -4,24 +4,22 @@ import { CONFIRMED_DISTRICT_CODES } from '@/data/districts'
 /**
  * GET /api/districts
  *
- * Returns all confirmed Zambian NRC district codes.
- *
- * NOTE: Only 3 codes are confirmed from primary sources.
- * Strict mode validation requires this list to be complete and verified.
- * It is therefore deferred to v2.
- * See docs/ADR-001-muchinga-province.md for full reasoning.
- *
- * Response 200:
- *   { districts, total_confirmed, note, contribute_url }
+ * Returns a partial reference list, not an exhaustive list of valid codes.
+ * Absence from this response must never be treated as proof that a code
+ * is invalid.
  */
 export async function GET() {
   return NextResponse.json(
     {
       districts: CONFIRMED_DISTRICT_CODES,
       total_confirmed: Object.keys(CONFIRMED_DISTRICT_CODES).length,
-      note: 'Only codes verified from primary sources are included. Strict mode district validation is deferred to v2. See ADR-001 for full reasoning.',
+      dataset_status: 'partial',
+      note: 'Only three district-code references are currently confirmed. This dataset is not exhaustive and is not used to reject NRCs.',
       contribute_url: 'https://github.com/THFCMAZ01/zed-nrc-validator/issues',
     },
-    { status: 200 }
+    {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' },
+    }
   )
 }

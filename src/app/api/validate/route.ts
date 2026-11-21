@@ -1,23 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateNRC } from '@/lib/nrc'
-import type { NRCValidateOptions } from '@/types/nrc.types'
+
+const NO_STORE = { 'Cache-Control': 'no-store' }
+
+function badRequest(code: string, message: string, field?: string) {
+  return NextResponse.json(
+    { error: { code, message, ...(field ? { field } : {}) } },
+    { status: 400, headers: NO_STORE }
+  )
+}
 
 /**
  * POST /api/validate
  *
- * Validates a single Zambian NRC number.
- *
- * Request body:
- *   { "nrc": string, "strict"?: boolean }
- *
- * Response 200 — always returned when the request is well-formed.
- *   The NRCValidationResult tells you if the NRC itself is valid.
- *
- * Response 400 — only when the request body is malformed.
- *   { "error": string }
- *
- * Note: A valid HTTP request containing an invalid NRC returns 200,
- * not 400. The request succeeded. The NRC failed. These are different.
+ * A well-formed request returns 200, even when the NRC format is invalid.
+ * The result's valid property describes format only, not registry status.
  */
 export async function POST(request: NextRequest) {
   let body: unknown
@@ -25,30 +22,37 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json(
-      { error: 'Request body must be valid JSON.' },
-      { status: 400 }
-    )
+    return badRequest('INVALID_JSON', 'Request body must be valid JSON.')
   }
 
   if (
     !body ||
     typeof body !== 'object' ||
+    Array.isArray(body) ||
     !('nrc' in body) ||
     typeof (body as Record<string, unknown>).nrc !== 'string'
   ) {
-    return NextResponse.json(
-      { error: "Request body must include an 'nrc' field of type string." },
-      { status: 400 }
+    return badRequest(
+      'INVALID_REQUEST_BODY',
+      "Request body must include an 'nrc' field of type string.",
+      'nrc'
     )
   }
 
-  const { nrc, strict } = body as { nrc: string; strict?: unknown }
+  const payload = body as Record<string, unknown>
 
-  const options: NRCValidateOptions = {
-    strict: typeof strict === 'boolean' ? strict : false,
+  if ('strict' in payload && typeof payload.strict !== 'boolean') {
+    return badRequest(
+      'INVALID_STRICT_OPTION',
+      "The optional 'strict' field must be a boolean.",
+      'strict'
+    )
   }
 
-  const result = validateNRC(nrc, options)
-  return NextResponse.json(result, { status: 200 })
+  // strict is retained for compatibility but does not perform district lookup.
+  const result = validateNRC(payload.nrc as string, {
+    strict: payload.strict as boolean | undefined,
+  })
+
+  return NextResponse.json(result, { status: 200, headers: NO_STORE })
 }

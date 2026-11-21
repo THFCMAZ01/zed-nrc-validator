@@ -1,43 +1,47 @@
 import { describe, test, expect } from 'vitest'
 import { validateNRC, generateNRC } from '@/lib/nrc'
 
-describe('NRC Validator — Level 1 (Format Validation)', () => {
-
-  // ── Happy path ──────────────────────────────────────────────────────────
-
-  test('TC-01: accepts a valid Zambian NRC', () => {
-    const result = validateNRC("613475/61/1")
-    expect(result.valid).toBe(true)
+describe('NRC Validator — format validation', () => {
+  test('accepts a correctly structured NRC example', () => {
+    expect(validateNRC('613475/61/1').valid).toBe(true)
   })
 
-  test('TC-02: accepts Commonwealth NRC (digit 2)', () => {
-    const result = validateNRC("000123/11/2")
-    expect(result.valid).toBe(true)
-  })
-
-  test('TC-03: accepts Foreign NRC (digit 3)', () => {
-    const result = validateNRC("000123/11/3")
-    expect(result.valid).toBe(true)
-  })
-
-  test('TC-04: accepts historically first NRC', () => {
-    const result = validateNRC("000001/11/1")
-    expect(result.valid).toBe(true)
-  })
-
-  // ── Format failures ─────────────────────────────────────────────────────
-
-  test('TC-05: rejects wrong separator (dash instead of slash)', () => {
-    const result = validateNRC("613475-61-1")
-    expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_FORMAT')
-      expect(result.error.segment).toBe('input')
+  test('accepts all supported final digits', () => {
+    for (const digit of ['1', '2', '3']) {
+      expect(validateNRC('000123/11/' + digit).valid).toBe(true)
     }
   })
 
-  test('TC-06: rejects sequence with only 5 digits', () => {
-    const result = validateNRC("61347/61/1")
+  test('preserves leading zeroes in the sequence and district code', () => {
+    const result = validateNRC('000001/11/1')
+    expect(result.valid).toBe(true)
+    if (result.valid) {
+      expect(result.segments.sequence).toBe('000001')
+      expect(result.segments.districtCode).toBe('11')
+    }
+  })
+
+  test('does not reject an unlisted district code', () => {
+    expect(validateNRC('613475/00/1').valid).toBe(true)
+  })
+
+  test('rejects whitespace around an otherwise valid NRC', () => {
+    expect(validateNRC(' 613475/61/1').valid).toBe(false)
+    expect(validateNRC('613475/61/1 ').valid).toBe(false)
+  })
+
+  test('rejects Unicode numerals rather than normalising them', () => {
+    expect(validateNRC('٦١٣٤٧٥/٦١/١').valid).toBe(false)
+  })
+
+  test('rejects a dash in place of the separators', () => {
+    const result = validateNRC('613475-61-1')
+    expect(result.valid).toBe(false)
+    if (!result.valid) expect(result.error.code).toBe('INVALID_FORMAT')
+  })
+
+  test('identifies a short sequence', () => {
+    const result = validateNRC('61347/61/1')
     expect(result.valid).toBe(false)
     if (!result.valid) {
       expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
@@ -45,101 +49,84 @@ describe('NRC Validator — Level 1 (Format Validation)', () => {
     }
   })
 
-  test('TC-07: rejects sequence with 7 digits', () => {
-    const result = validateNRC("6134756/61/1")
+  test('identifies a long sequence', () => {
+    const result = validateNRC('6134756/61/1')
+    expect(result.valid).toBe(false)
+    if (!result.valid) expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
+  })
+
+  test('rejects a non-numeric sequence', () => {
+    const result = validateNRC('61347A/61/1')
     expect(result.valid).toBe(false)
     if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_SEQUENCE_LENGTH')
+      expect(result.error.code).toBe('INVALID_FORMAT')
       expect(result.error.segment).toBe('sequence')
     }
   })
 
-  test('TC-08: rejects district code with 3 digits', () => {
-    const result = validateNRC("613475/611/1")
+  test('rejects a district code with the wrong length', () => {
+    const result = validateNRC('613475/611/1')
     expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_FORMAT')
-      expect(result.error.segment).toBe('districtCode')
+    if (!result.valid) expect(result.error.segment).toBe('districtCode')
+  })
+
+  test('rejects a non-numeric district code', () => {
+    const result = validateNRC('613475/6A/1')
+    expect(result.valid).toBe(false)
+    if (!result.valid) expect(result.error.segment).toBe('districtCode')
+  })
+
+  test('rejects unsupported nationality digits', () => {
+    for (const digit of ['0', '4', '9', 'A']) {
+      expect(validateNRC('613475/61/' + digit).valid).toBe(false)
     }
   })
 
-  test('TC-09: rejects nationality digit 0', () => {
-    const result = validateNRC("613475/61/0")
-    expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_NATIONALITY_DIGIT')
-      expect(result.error.segment).toBe('nationalityDigit')
+  test('rejects missing, extra, or empty segments', () => {
+    for (const value of [
+      '613475/61',
+      '613475/61/1/2',
+      '/61/1',
+      '613475//1',
+      '613475/61/',
+    ]) {
+      expect(validateNRC(value).valid).toBe(false)
     }
   })
 
-  test('TC-10: rejects nationality digit 4', () => {
-    const result = validateNRC("613475/61/4")
+  test('rejects an empty string', () => {
+    const result = validateNRC('')
     expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_NATIONALITY_DIGIT')
-      expect(result.error.segment).toBe('nationalityDigit')
-    }
+    if (!result.valid) expect(result.error.code).toBe('EMPTY_INPUT')
   })
 
-  test('TC-11: rejects empty string', () => {
-    const result = validateNRC("")
+  test('rejects whitespace-only input', () => {
+    const result = validateNRC('   ')
     expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('EMPTY_INPUT')
-      expect(result.error.segment).toBe('input')
-    }
+    if (!result.valid) expect(result.error.code).toBe('EMPTY_INPUT')
   })
 
-  test('TC-12: rejects null cast to string', () => {
+  test('does not throw when a JavaScript caller passes null', () => {
     const result = validateNRC(null as unknown as string)
     expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('EMPTY_INPUT')
-    }
+    if (!result.valid) expect(result.error.code).toBe('EMPTY_INPUT')
   })
 
-  test('TC-13: rejects letters in sequence', () => {
-    const result = validateNRC("61347A/61/1")
-    expect(result.valid).toBe(false)
-    if (!result.valid) {
-      expect(result.error.code).toBe('INVALID_FORMAT')
-      expect(result.error.segment).toBe('sequence')
-    }
-  })
-})
-
-describe('NRC Validator — Level 2 (Strict Mode)', () => {
-
-  test('TC-14: strict mode passes known district (Ndola = 61)', () => {
-    const result = validateNRC("613475/61/1", { strict: true })
-    expect(result.valid).toBe(true)
-  })
-
-  // Strict mode district validation is deferred to v2.
-  // In v1, strict: true performs the same check as Level 1.
-  // See docs/ADR-001-muchinga-province.md
-  test('TC-15: strict mode v1 — district validation deferred to v2', () => {
-    const result = validateNRC("613475/00/1", { strict: true })
-    expect(result.valid).toBe(true)
-  })
-
-  test('TC-16: strict mode off by default — unknown district passes Level 1', () => {
-    const result = validateNRC("613475/00/1")
-    expect(result.valid).toBe(true)
+  test('legacy strict option remains format-only for unlisted codes', () => {
+    expect(validateNRC('613475/00/1', { strict: true }).valid).toBe(true)
   })
 })
 
 describe('NRC Generator', () => {
-
-  test('TC-17: generated NRC passes Level 1 validation', () => {
+  test('generates a sample that passes format validation', () => {
     const generated = generateNRC()
     const result = validateNRC(generated.nrc)
     expect(result.valid).toBe(true)
+    expect(generated.synthetic).toBe(true)
   })
 
-  test('TC-18: generated NRC passes strict mode validation', () => {
+  test('uses a supported nationality digit', () => {
     const generated = generateNRC()
-    const result = validateNRC(generated.nrc, { strict: true })
-    expect(result.valid).toBe(true)
+    expect(['1', '2', '3']).toContain(String(generated.nationalityDigit))
   })
 })

@@ -355,13 +355,13 @@ export default function Home() {
               <span className="endpoint-description">Check up to 50 numbers</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
             </div>
-            <div className="endpoint-row">
+            <a href="/api/generate" className="endpoint-row">
               <span className="http-method method-get">GET</span>
               <code>/api/generate</code>
               <span className="endpoint-description">Generate a test sample</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
             </a>
-            <div className="endpoint-row">
+            <a href="/api/districts" className="endpoint-row">
               <span className="http-method method-get">GET</span>
               <code>/api/districts</code>
               <span className="endpoint-description">Read confirmed references</span>

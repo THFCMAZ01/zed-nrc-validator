@@ -323,7 +323,6 @@ export default function Home() {
                 Inspect the reference data <span aria-hidden="true">↗</span>
               </a>
             </div>
-            </div>
 
             <div className="scope-note">
               <span className="scope-mark" aria-hidden="true">i</span>

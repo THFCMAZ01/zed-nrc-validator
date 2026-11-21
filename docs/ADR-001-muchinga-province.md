@@ -1,4 +1,4 @@
-# ADR-001: Muchinga Province District Code Handling
+# ADR-001: Muchinga Province and NRC District-Code Uncertainty
 
 ## Date
 March 2026
@@ -8,112 +8,64 @@ Accepted
 
 ## Context
 
-Zambia's NRC number uses a two-digit district code where the first digit
-represents the province and the second represents the district within it.
+The NRC format used by this project contains a two-digit district-code
+segment. The project has confirmed only a small number of code-to-place
+references from primary sources:
 
-Codes confirmed from primary sources:
-- `11` = Lusaka (Province 1, District 1)
-- `61` = Ndola (Province 6 = Copperbelt, District 1)
-- `82` = Mongu (Province 8 = Western, District 2)
+- `11` — Lusaka (Lusaka Province)
+- `61` — Ndola (Copperbelt Province)
+- `82` — Mongu (Western Province)
 
-### The Muchinga Problem
+These examples are not enough to establish a complete list, an exhaustive
+range, or a general rule for interpreting each digit. In particular, the
+project does not assume that the first digit is always a province identifier
+or that the second digit is always a district identifier.
 
-In November 2011, Zambia's 10th province — Muchinga — was formed by
-splitting districts from Northern Province (code 5) and Eastern Province
-(code 3):
+### Muchinga context
 
-From Northern Province (5x): Chinsali, Isoka, Mafinga, Mpika, Nakonde
-From Eastern Province (3x): Chama
+Muchinga became Zambia's tenth province in 2011, following changes involving
+districts previously associated with Northern and Eastern provinces. The
+project's source review has not located public DNRPC documentation that
+establishes how NRC district codes were assigned or updated for the affected
+districts.
 
-The two-digit NRC format has no mechanism to represent a 10th province.
-The DNRPC has not published documentation confirming whether new codes
-were assigned to Muchinga districts after 2011.
+The administrative province structure alone cannot be used to infer an NRC
+code. A code must not be guessed from a district's current province or
+administrative number.
 
-### The Broader Data Problem
+### Data limitation
 
-Zambia expanded from 72 to 116 districts between 2012 and 2018. No
-complete, verified list of NRC district codes is publicly available.
-Building strict mode on unverified data would cause real valid NRCs
-to be incorrectly rejected — which is worse than not having the feature.
-
-## Decision
-
-For v1: Strict mode is accepted by the API but performs no additional
-checks beyond Level 1 format validation. Muchinga districts validate
-under their original province codes.
-
-For v2: Strict mode will validate against a community-verified lookup
-table containing only codes confirmed from primary sources.
-
-## Consequences
-
-- No NRC will be incorrectly rejected due to incomplete district data.
-- Developers who need district validation must wait for v2.
-- The data file (src/data/districts.ts) is kept separate from logic
-  so it can be updated without touching validation code (NFR-05).
-
-## Contributing Verified Codes
-
-Open a GitHub issue at:
-https://github.com/THFCMAZ01/zed-nrc-validator/issues
-
-Include: district name, province, the two-digit code, and your source.# ADR-001: Muchinga Province District Code Handling
-
-## Date
-March 2026
-
-## Status
-Accepted
-
-## Context
-
-Zambia's NRC number uses a two-digit district code where the first digit
-represents the province and the second represents the district within it.
-
-Codes confirmed from primary sources:
-- `11` = Lusaka (Province 1, District 1)
-- `61` = Ndola (Province 6 = Copperbelt, District 1)
-- `82` = Mongu (Province 8 = Western, District 2)
-
-### The Muchinga Problem
-
-In November 2011, Zambia's 10th province — Muchinga — was formed by
-splitting districts from Northern Province (code 5) and Eastern Province
-(code 3):
-
-From Northern Province (5x): Chinsali, Isoka, Mafinga, Mpika, Nakonde
-From Eastern Province (3x): Chama
-
-The two-digit NRC format has no mechanism to represent a 10th province.
-The DNRPC has not published documentation confirming whether new codes
-were assigned to Muchinga districts after 2011.
-
-### The Broader Data Problem
-
-Zambia expanded from 72 to 116 districts between 2012 and 2018. No
-complete, verified list of NRC district codes is publicly available.
-Building strict mode on unverified data would cause real valid NRCs
-to be incorrectly rejected — which is worse than not having the feature.
+The project has not established a complete, authoritative NRC-specific
+district-code mapping. Administrative district lists, province numbering,
+and NRC code assignments must not be assumed to be interchangeable.
 
 ## Decision
 
-For v1: Strict mode is accepted by the API but performs no additional
-checks beyond Level 1 format validation. Muchinga districts validate
-under their original province codes.
+For the current version:
 
-For v2: Strict mode will validate against a community-verified lookup
-table containing only codes confirmed from primary sources.
+- Validation checks the written NRC structure only.
+- The optional legacy `strict` parameter is accepted for compatibility but
+  performs no district-code lookup and has no effect on the result.
+- The district reference file is informational and partial.
+- A district code absent from the reference list is unverified by this
+  project; it is not rejected.
+- No code assignment is inferred for Muchinga districts.
+
+Any future district lookup must follow ADR-002 and must not reject a code
+unless the completeness and authority of the underlying dataset have been
+established.
 
 ## Consequences
 
-- No NRC will be incorrectly rejected due to incomplete district data.
-- Developers who need district validation must wait for v2.
-- The data file (src/data/districts.ts) is kept separate from logic
-  so it can be updated without touching validation code (NFR-05).
+- The validator avoids rejecting numbers based on guessed or incomplete
+  district data.
+- The UI and API must describe the district list as partial.
+- A future verified reference should include the code, place name, province,
+  source URL or publication reference, and verification notes.
+- Contributors must not submit or publish personal NRC numbers as evidence.
 
-## Contributing Verified Codes
+## Contributing references
 
-Open a GitHub issue at:
-https://github.com/THFCMAZ01/zed-nrc-validator/issues
-
-Include: district name, province, the two-digit code, and your source.
+Open a GitHub issue with the proposed code, place, province, and a public
+primary source or official publication. Do not attach personal NRC images or
+numbers.

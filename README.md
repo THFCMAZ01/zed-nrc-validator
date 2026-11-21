@@ -1,130 +1,172 @@
-# ZED NRC Validator
+# Zed NRC Validator
 
-A public API and web tool for validating Zambian National Registration
-Card (NRC) numbers. Built for developers building on Zambia.
+A small public API and web utility for checking the **written format** of a Zambian National Registration Card (NRC) number.
 
-## Problem Statement
+It is designed as a developer aid for applications built in Zambia. It is not connected to the National Registration system and does not verify identity, ownership, issuance, or whether a number is active.
 
-Every Zambian developer building a system with user registration,a
-hospital booking app,a fintech platform, a government portal needs
-to validate NRC numbers. No standardised public tool existed. Each
-developer wrote their own validation logic independently, producing
-inconsistent rules and repeated bugs.
+## What it checks
 
-## What v1 Does
+The current format rule is:
 
-**Level 1 — Format validation:**
-- Validates the NRC format: `NNNNNN/NN/N`
-- Six digits, slash, two digits, slash, nationality digit (1, 2, or 3)
-- Identifies exactly which segment failed with a specific error code
-- Generates syntactically valid fake NRCs for testing
+~~~text
+NNNNNN/NN/N
+~~~
 
-**What v1 does NOT do:**
-Strict district code validation is deferred to v2. Only 3 district
-codes have been verified from primary sources. See
-[ADR-001](docs/ADR-001-muchinga-province.md) for the full reasoning.
+- Six numeric characters for the sequence segment.
+- A slash.
+- Two numeric characters for the district-code segment.
+- A slash.
+- A final digit of 1, 2, or 3.
+
+The validator keeps the existing regular expression:
+
+~~~ts
+/^\d{6}\/\d{2}\/[123]$/
+~~~
+
+The expression checks syntax only. It does not establish that the number is genuine or issued. Both valid and invalid results include `validationLevel: "format"` so API consumers can distinguish syntax checks from any future registry-backed verification.
+
+## District-code data
+
+Only three district-code references are currently included because those are the codes confirmed in the project's primary-source review:
+
+| Code | Reference |
+| --- | --- |
+| 11 | Lusaka (Lusaka Province) |
+| 61 | Ndola (Copperbelt Province) |
+| 82 | Mongu (Western Province) |
+
+This is a **partial reference list**, not a complete list of valid codes. A code missing from the list is described as unverified by this tool; it is not rejected. The project does not infer a general province/district formula from these three examples, and it does not apply a guessed range such as `01`–`69`.
+
+See [ADR-001](docs/ADR-001-muchinga-province.md) for the background and [ADR-002](docs/ADR-002-district-code-validation.md) for the current decision. The earlier range proposal is retained in [the archive](docs/archive/provisional-district-range-proposal.md), but was not adopted.
 
 ## API
 
+All request bodies must be JSON. Validation results use HTTP 200 when the request itself is well-formed, even when the submitted NRC fails the format check. Malformed requests return HTTP 400.
+
 ### POST /api/validate
-```json
-{ "nrc": "613475/61/1", "strict": false }
-```
-Returns `NRCValidationResult` — always 200 for well-formed requests.
+
+Request:
+
+~~~json
+{
+  "nrc": "613475/61/1"
+}
+~~~
+
+The legacy optional strict boolean is still accepted for backwards compatibility. It is deprecated and currently has no effect; it does not perform district lookup. A non-boolean value is rejected with HTTP 400.
 
 ### POST /api/validate/batch
-```json
-{ "nrcs": ["613475/61/1", "bad-nrc"], "strict": false }
-```
-Returns `NRCBatchResult` with results array and summary. Max 50 per request.
+
+Request:
+
+~~~json
+{
+  "nrcs": ["613475/61/1", "not-an-nrc"]
+}
+~~~
+
+Accepts 1–50 strings. Non-string entries are rejected as malformed requests; they are never converted to strings.
+
+A successful batch response contains one result per input plus a summary:
+
+~~~json
+{
+  "results": [],
+  "summary": {
+    "total": 2,
+    "valid": 1,
+    "invalid": 1
+  }
+}
+~~~
 
 ### GET /api/generate
-Returns a syntactically valid fake NRC for testing.
+
+Returns a randomly generated sample for development and testing. It is marked with synthetic: true. It is not looked up in a registry and must not be used as a real identity or production record. A random sample could coincidentally match an issued number.
 
 ### GET /api/districts
-Returns the 3 confirmed district codes.
+
+Returns the three currently confirmed references and dataset_status: partial. Consumers must not treat absence from this list as proof that a district code is invalid.
+
+### API error shape
+
+Malformed requests use a consistent error object:
+
+~~~json
+{
+  "error": {
+    "code": "INVALID_BATCH_ITEM",
+    "message": "Every item in the nrcs array must be a string.",
+    "field": "nrcs[1]"
+  }
+}
+~~~
+
+Common request error codes include INVALID_JSON, INVALID_REQUEST_BODY, INVALID_STRICT_OPTION, INVALID_BATCH_ITEM, EMPTY_BATCH, and BATCH_LIMIT_EXCEEDED.
+
+Validation endpoints return Cache-Control: no-store so NRC-bearing responses are not stored by ordinary HTTP caches.
 
 ## Architecture
-src/types/nrc.types.ts  TypeScript contracts — imports nothing, imported by all
-src/data/districts.ts   Static data — confirmed district codes
-src/lib/nrc.ts          Pure logic — no framework dependency, fully testable
-src/app/api/            HTTP layer — receives requests, calls lib, returns JSON
-src/app/page.tsx        UI — calls the API, never calls lib directly
 
-This separation keeps the core validation logic completely independent
-of Next.js. It can be tested without a running server and could be
-published as a standalone npm package.
+~~~text
+src/
+  types/nrc.types.ts       Shared TypeScript contracts
+  data/districts.ts        Partial, confirmed district references
+  lib/nrc.ts               Framework-independent format logic
+  app/api/                 HTTP route handlers
+  app/page.tsx             Web interface
+  app/globals.css          Visual system and responsive layout
+tests/
+  nrc.test.ts              Core validation and generator tests
+  api.test.ts              Route-level request/response tests
+~~~
 
-## Setup
+The core validator is independent of Next.js. The web interface uses the same district reference source as the API, so district labels are not duplicated.
 
-```bash
+## Privacy and limitations
+
+- The application has no database and does not intentionally persist submitted NRCs.
+- Validation endpoints send Cache-Control: no-store.
+- Do not submit real NRCs unless you are comfortable sending them to the service's hosting provider. Hosting-provider infrastructure and telemetry are outside the application's control.
+- Do not log request bodies or NRC values when integrating the API into another system.
+- No registry lookup, identity match, or proof of issuance is performed.
+- Rate limiting and authoritative district data remain future work.
+
+## Local development
+
+~~~bash
 git clone https://github.com/THFCMAZ01/zed-nrc-validator
 cd zed-nrc-validator
 npm install
 npm run dev
-```
+~~~
 
-Open http://localhost:3000
+Open http://localhost:3000.
 
 ## Tests
 
-```bash
-npm test          # watch mode
-npm run test:run  # run once (for CI)
-```
+~~~bash
+npm run test:run
+npm run lint
+npm run build
+~~~
 
-18 tests, 18 passing.
+The test suite covers format edge cases, generator behavior, malformed HTTP requests, batch limits, and endpoint response headers.
 
-## Key Design Decisions
+## Tech stack
 
-**Why is the return type a discriminated union?**
-When `valid: true`, TypeScript guarantees `segments` exists. When
-`valid: false`, TypeScript guarantees `error` exists. Bugs caught
-at compile time, not runtime.
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS
+- Vitest
+- Vercel
 
-**Why specific error codes instead of one generic code?**
-`INVALID_NATIONALITY_DIGIT` tells a developer exactly which field to
-highlight. `INVALID_FORMAT` does not. API consumers can handle each
-case differently.
+## Contributing district references
 
-**Why is strict mode deferred?**
-Shipping strict mode with unverified district codes would cause real
-valid Zambian NRCs to be incorrectly rejected. Honest limitations are
-better than inaccurate features. See ADR-001.
+To propose a new district-code reference, open a GitHub issue with the district name, province, two-digit code, and the primary source supporting the mapping. Do not submit or publish anyone's personal NRC.
 
-## Security
+Repository: https://github.com/THFCMAZ01/zed-nrc-validator
 
-- No NRC numbers are stored or logged.
-- All inputs are validated before reaching core logic.
-- No authentication required — public utility.
-- Rate limiting planned for v2.
-
-## What I Would Do Differently
-
-- Research the district code data problem before writing any code.
-  The data integrity issue should have been the first question.
-- Add Zod for API request validation instead of manual type checks.
-- Add rate limiting from day one.
-
-## Tech Stack
-
-| Tool | Why |
-|------|-----|
-| Next.js 14 App Router | API routes and UI in one project |
-| TypeScript | Discriminated union catches bugs at compile time |
-| Tailwind CSS | Utility-first, no separate CSS file needed |
-| Vitest | Fast, TypeScript-native, watch mode built in |
-| Vercel | Zero-config deployment for Next.js |
-
-## Author
-
-Joshua Mazaza — BSE Year 3, Zambia University of Technology, Ndola
-GitHub: [@THFCMAZ01](https://github.com/THFCMAZ01)
-
-## Contributing
-
-To contribute verified Zambian NRC district codes, open a GitHub issue.
-See [ADR-001](docs/ADR-001-muchinga-province.md) for what is needed.
-
-## Vercel link:
- https://zed-nrc-validator.vercel.app/ 
+Live utility: https://zed-nrc-validator.vercel.app

@@ -7,19 +7,10 @@ import type {
   NRCSegment,
 } from '../types/nrc.types'
 
-// ─── Regex ────────────────────────────────────────────────────────────────────
-// ^      = start of string
-// \d{6}  = exactly 6 digits (sequence number)
-// \/     = literal forward slash
-// \d{2}  = exactly 2 digits (district code)
-// \/     = literal forward slash
-// [123]  = exactly one of: 1, 2, or 3 (nationality digit)
-// $      = end of string
+// Keep this expression focused on syntax only.
+// Six digits / two digits / one supported nationality digit.
 const NRC_REGEX = /^\d{6}\/\d{2}\/[123]$/
 
-// ─── Helper: build a failed result ───────────────────────────────────────────
-// DRY principle — one function to construct invalid results.
-// Every failure path calls this instead of repeating the same object shape.
 function makeInvalid(
   input: string,
   code: NRCErrorCode,
@@ -29,27 +20,29 @@ function makeInvalid(
 ): NRCValidationResult {
   return {
     valid: false,
+    validationLevel: 'format',
     input,
     ...(segments && { segments }),
     error: { code, message, segment },
   }
 }
 
-// ─── validateNRC ─────────────────────────────────────────────────────────────
-// Level 1: validates NRC format — all 18 tests cover this.
-// Level 2 (strict district lookup): deferred to v2.
-// See docs/ADR-001-muchinga-province.md for why.
-//
-// The underscore prefix on _options tells TypeScript and ESLint:
-// "This parameter is intentionally unused for now — strict mode is v2."
+/**
+ * Checks the written structure of an NRC string.
+ *
+ * This is format validation only. It does not confirm that a number was
+ * issued, that its district code exists, or that it belongs to a person.
+ * The legacy options argument remains accepted for compatibility; strict
+ * has no effect until a complete, authoritative district dataset exists.
+ */
 export function validateNRC(
   input: string,
   _options: NRCValidateOptions = {}
 ): NRCValidationResult {
+  // The legacy options object remains part of the public signature, but it
+  // intentionally has no effect until district references can be verified.
+  void _options
 
-  // ── Null / undefined guard ───────────────────────────────────────────────
-  // TypeScript declares this is a string, but JavaScript callers may pass null.
-  // We guard at runtime so the function never crashes.
   if (input === null || input === undefined) {
     return makeInvalid(
       String(input),
@@ -59,7 +52,6 @@ export function validateNRC(
     )
   }
 
-  // ── Empty string guard ───────────────────────────────────────────────────
   if (input.trim() === '') {
     return makeInvalid(
       input,
@@ -69,76 +61,66 @@ export function validateNRC(
     )
   }
 
-  // ── Specific error diagnosis ─────────────────────────────────────────────
-  // If the overall format is wrong, try to identify exactly which segment
-  // caused the problem so the error message is useful to the developer.
-  if (!NRC_REGEX.test(input)) {
+  if (!NRC_REGEX.test(input) || input.length !== 11) {
     const parts = input.split('/')
 
     if (parts.length === 3) {
-      const [seq, district, nat] = parts
+      const [sequence, district, nationality] = parts
 
-      // Sequence: wrong number of characters
-      if (seq.length !== 6) {
+      if (sequence.length !== 6) {
         return makeInvalid(
           input,
           'INVALID_SEQUENCE_LENGTH',
-          `Sequence must be exactly 6 digits. Got ${seq.length} character(s): "${seq}".`,
+          'The sequence segment must contain exactly 6 digits.',
           'sequence'
         )
       }
 
-      // Sequence: correct length but contains non-digit characters (e.g. letters)
-      if (!/^\d+$/.test(seq)) {
+      if (!/^\d+$/.test(sequence)) {
         return makeInvalid(
           input,
           'INVALID_FORMAT',
-          `Sequence must contain only digits. Received: "${seq}".`,
+          'The sequence segment must contain digits only.',
           'sequence'
         )
       }
 
-      // District: wrong number of characters
       if (district.length !== 2) {
         return makeInvalid(
           input,
           'INVALID_FORMAT',
-          `District code must be exactly 2 digits. Got ${district.length} character(s): "${district}".`,
+          'The district-code segment must contain exactly 2 digits.',
           'districtCode'
         )
       }
 
-      // District: contains non-digit characters
       if (!/^\d{2}$/.test(district)) {
         return makeInvalid(
           input,
           'INVALID_FORMAT',
-          `District code must contain only digits. Received: "${district}".`,
+          'The district-code segment must contain digits only.',
           'districtCode'
         )
       }
 
-      // Nationality digit: not 1, 2, or 3
-      if (!/^[123]$/.test(nat)) {
+      if (!/^[123]$/.test(nationality)) {
         return makeInvalid(
           input,
           'INVALID_NATIONALITY_DIGIT',
-          `Nationality digit must be 1 (Zambian), 2 (Commonwealth), or 3 (Other Foreign). Received: "${nat}".`,
+          'The final digit must be 1, 2, or 3.',
           'nationalityDigit'
         )
       }
     }
 
-    // Catch-all: format is completely wrong — wrong separators, wrong structure
     return makeInvalid(
       input,
       'INVALID_FORMAT',
-      `NRC must follow the format NNNNNN/NN/N where N is a digit and the last digit is 1, 2, or 3. Example: 613475/61/1. Received: "${input}".`,
+      'Expected 6 digits, a slash, 2 digits, a slash, and a final digit of 1, 2, or 3.',
       'input'
     )
   }
 
-  // ── Valid — split into named segments ────────────────────────────────────
   const parts = input.split('/')
   const segments: NRCSegments = {
     sequence: parts[0],
@@ -146,29 +128,28 @@ export function validateNRC(
     nationalityDigit: parts[2],
   }
 
-  // Strict mode is accepted but deferred to v2.
-  // _options is unused intentionally — see docs/ADR-001.
-
   return {
     valid: true,
+    validationLevel: 'format',
     input,
     segments,
   }
 }
 
-// ─── generateNRC ─────────────────────────────────────────────────────────────
-// Generates a syntactically valid fake NRC for testing purposes.
-// Uses confirmed district code 61 (Ndola, Copperbelt) — one of three
-// codes verified from primary sources. Always passes Level 1 validation.
+/**
+ * Produces a randomly generated sample for development and testing.
+ * It is not retrieved from an official registry and must not be used as
+ * a real person's identifier or for production identity records.
+ */
 export function generateNRC(): NRCGenerateResult {
-  // Random 6-digit sequence: 100000 to 999999
   const sequence = Math.floor(Math.random() * 900000 + 100000).toString()
   const districtCode = '61'
   const nationalityDigit: 1 | 2 | 3 = 1
 
   return {
-    nrc: `${sequence}/${districtCode}/${nationalityDigit}`,
+    nrc: sequence + '/' + districtCode + '/' + nationalityDigit,
     districtCode,
     nationalityDigit,
+    synthetic: true,
   }
 }

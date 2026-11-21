@@ -37,7 +37,7 @@ export default function Home() {
         throw new Error(message || 'The request could not be completed.')
       }
 
-      setResult(payload as ValidationResult)
+      setResult(payload as NRCValidationResult)
     } catch (error) {
       setResult(null)
       setRequestError(

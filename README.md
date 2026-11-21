@@ -36,9 +36,9 @@ Only three district-code references are currently included because those are the
 | 61 | Ndola (Copperbelt Province) |
 | 82 | Mongu (Western Province) |
 
-This is a **partial reference list**, not a complete list of valid codes. A code missing from the list is described as unverified by this tool; it is not rejected. District-code validation must remain disabled until a complete, authoritative dataset is available.
+This is a **partial reference list**, not a complete list of valid codes. A code missing from the list is described as unverified by this tool; it is not rejected. The project does not infer a general province/district formula from these three examples, and it does not apply a guessed range such as `01`–`69`.
 
-See [ADR-001](docs/ADR-001-muchinga-province.md) for the reasoning behind deferring district lookup.
+See [ADR-001](docs/ADR-001-muchinga-province.md) for the background and [ADR-002](docs/ADR-002-district-code-validation.md) for the current decision. The earlier range proposal is retained in [the archive](docs/archive/provisional-district-range-proposal.md), but was not adopted.
 
 ## API
 

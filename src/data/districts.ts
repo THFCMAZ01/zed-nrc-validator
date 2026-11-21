@@ -4,13 +4,14 @@
 // Strict mode validation is deferred to v2.
 // See docs/ADR-001-muchinga-province.md for full reasoning.
 //
-// Format: "XY" where X = province digit (1-9), Y = district digit
+// These are individual source-backed references only. No general formula or
+// exhaustive range is inferred from this small sample.
 //
 // To contribute a verified code, open a GitHub issue with:
 //   - District name
 //   - Province name
 //   - The two-digit code
-//   - Your source (NRC copy with permission, or official document)
+//   - A public primary source or official document (do not post personal NRCs)
 //
 // https://github.com/THFCMAZ01/zed-nrc-validator/issues
 

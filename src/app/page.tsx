@@ -103,7 +103,7 @@ export default function Home() {
             <span className="brand-overline">ZED / DEVELOPER TOOLS</span>
             <span className="brand-name">NRC Validator</span>
           </span>
-        </a>
+        </Link>
 
         <nav className="header-nav" aria-label="Main navigation">
           <a href="#api">API reference</a>

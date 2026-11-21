@@ -39,6 +39,10 @@ export function validateNRC(
   input: string,
   _options: NRCValidateOptions = {}
 ): NRCValidationResult {
+  // The legacy options object remains part of the public signature, but it
+  // intentionally has no effect until district references can be verified.
+  void _options
+
   if (input === null || input === undefined) {
     return makeInvalid(
       String(input),

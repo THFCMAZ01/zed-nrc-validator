@@ -321,7 +321,8 @@ export default function Home() {
               </p>
               <a href="/api/districts" target="_blank" rel="noreferrer">
                 Inspect the reference data <span aria-hidden="true">↗</span>
-              </div>
+              </a>
+            </div>
             </div>
 
             <div className="scope-note">

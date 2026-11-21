@@ -347,13 +347,11 @@ export default function Home() {
               <span className="http-method method-post">POST</span>
               <code>/api/validate</code>
               <span className="endpoint-description">Check one number</span>
-              <span className="endpoint-arrow" aria-hidden="true">↗</span>
             </div>
             <div className="endpoint-row">
               <span className="http-method method-post">POST</span>
               <code>/api/validate/batch</code>
               <span className="endpoint-description">Check up to 50 numbers</span>
-              <span className="endpoint-arrow" aria-hidden="true">↗</span>
             </div>
             <a href="/api/generate" className="endpoint-row">
               <span className="http-method method-get">GET</span>

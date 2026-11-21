@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, test, expect } from 'vitest'
 import { NextRequest } from 'next/server'
 import { POST as validateSingle } from '@/app/api/validate/route'

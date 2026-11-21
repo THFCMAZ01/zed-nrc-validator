@@ -57,7 +57,7 @@ export function validateNRC(
     )
   }
 
-  if (!NRC_REGEX.test(input)) {
+  if (!NRC_REGEX.test(input) || input.length !== 11) {
     const parts = input.split('/')
 
     if (parts.length === 3) {

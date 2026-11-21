@@ -2,22 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { CONFIRMED_DISTRICT_CODES } from '@/data/districts'
-
-type NRCSegments = {
-  sequence: string
-  districtCode: string
-  nationalityDigit: string
-}
-
-type ValidationResult =
-  | { valid: true; validationLevel: 'format'; input: string; segments: NRCSegments }
-  | {
-      valid: false
-      validationLevel: 'format'
-      input: string
-      segments?: NRCSegments
-      error: { code: string; message: string; segment: string }
-    }
+import type { NRCValidationResult } from '@/types/nrc.types'
 
 const NATIONALITY_LABELS: Record<string, string> = {
   '1': 'Zambian citizen',
@@ -27,7 +12,7 @@ const NATIONALITY_LABELS: Record<string, string> = {
 
 export default function Home() {
   const [input, setInput] = useState('')
-  const [result, setResult] = useState<ValidationResult | null>(null)
+  const [result, setResult] = useState<NRCValidationResult | null>(null)
   const [validating, setValidating] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [requestError, setRequestError] = useState('')
@@ -375,13 +360,13 @@ export default function Home() {
               <code>/api/generate</code>
               <span className="endpoint-description">Generate a test sample</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
-            </div>
+            </a>
             <div className="endpoint-row">
               <span className="http-method method-get">GET</span>
               <code>/api/districts</code>
               <span className="endpoint-description">Read confirmed references</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
-            </div>
+            </a>
           </div>
 
           <p className="api-footnote">

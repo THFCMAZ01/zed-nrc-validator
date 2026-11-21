@@ -36,6 +36,11 @@ describe('NRC Validator — format validation', () => {
     expect(validateNRC('٦١٣٤٧٥/٦١/١').valid).toBe(false)
   })
 
+  test('rejects a trailing line break despite the regular expression end anchor', () => {
+    expect(validateNRC('613475/61/1\\n').valid).toBe(false)
+    expect(validateNRC('613475/61/1\\r\\n').valid).toBe(false)
+  })
+
   test('rejects a dash in place of the separators', () => {
     const result = validateNRC('613475-61-1')
     expect(result.valid).toBe(false)

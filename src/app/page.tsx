@@ -5,12 +5,6 @@ import Link from 'next/link'
 import { CONFIRMED_DISTRICT_CODES } from '@/data/districts'
 import type { NRCValidationResult } from '@/types/nrc.types'
 
-const NATIONALITY_LABELS: Record<string, string> = {
-  '1': 'Zambian citizen',
-  '2': 'Commonwealth citizen',
-  '3': 'Other foreign national',
-}
-
 export default function Home() {
   const [input, setInput] = useState('')
   const [result, setResult] = useState<NRCValidationResult | null>(null)
@@ -244,12 +238,6 @@ export default function Home() {
                         <dd>
                           {CONFIRMED_DISTRICT_CODES[result.segments.districtCode] ??
                             'Not in the confirmed reference list'}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Nationality category</dt>
-                        <dd>
-                          {NATIONALITY_LABELS[result.segments.nationalityDigit]}
                         </dd>
                       </div>
                     </dl>

@@ -27,11 +27,13 @@ export interface NRCValidationError {
 export type NRCValidationResult =
   | {
       valid: true
+      validationLevel: 'format'
       input: string
       segments: NRCSegments
     }
   | {
       valid: false
+      validationLevel: 'format'
       input: string
       segments?: NRCSegments
       error: NRCValidationError

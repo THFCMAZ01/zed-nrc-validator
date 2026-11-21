@@ -10,9 +10,10 @@ type NRCSegments = {
 }
 
 type ValidationResult =
-  | { valid: true; input: string; segments: NRCSegments }
+  | { valid: true; validationLevel: 'format'; input: string; segments: NRCSegments }
   | {
       valid: false
+      validationLevel: 'format'
       input: string
       segments?: NRCSegments
       error: { code: string; message: string; segment: string }
@@ -334,7 +335,7 @@ export default function Home() {
               </p>
               <a href="/api/districts" target="_blank" rel="noreferrer">
                 Inspect the reference data <span aria-hidden="true">↗</span>
-              </a>
+              </div>
             </div>
 
             <div className="scope-note">
@@ -357,30 +358,30 @@ export default function Home() {
           </div>
 
           <div className="endpoint-list">
-            <a href="/api/validate" className="endpoint-row">
+            <div className="endpoint-row">
               <span className="http-method method-post">POST</span>
               <code>/api/validate</code>
               <span className="endpoint-description">Check one number</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
-            </a>
-            <a href="/api/validate/batch" className="endpoint-row">
+            </div>
+            <div className="endpoint-row">
               <span className="http-method method-post">POST</span>
               <code>/api/validate/batch</code>
               <span className="endpoint-description">Check up to 50 numbers</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
-            </a>
-            <a href="/api/generate" className="endpoint-row">
+            </div>
+            <div className="endpoint-row">
               <span className="http-method method-get">GET</span>
               <code>/api/generate</code>
               <span className="endpoint-description">Generate a test sample</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
-            </a>
-            <a href="/api/districts" className="endpoint-row">
+            </div>
+            <div className="endpoint-row">
               <span className="http-method method-get">GET</span>
               <code>/api/districts</code>
               <span className="endpoint-description">Read confirmed references</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
-            </a>
+            </div>
           </div>
 
           <p className="api-footnote">

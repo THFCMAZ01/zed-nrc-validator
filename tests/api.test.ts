@@ -30,6 +30,7 @@ describe('POST /api/validate', () => {
 
     expect(response.status).toBe(200)
     expect(body.valid).toBe(true)
+    expect(body.validationLevel).toBe('format')
     expect(response.headers.get('cache-control')).toBe('no-store')
   })
 

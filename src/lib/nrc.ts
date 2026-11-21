@@ -20,6 +20,7 @@ function makeInvalid(
 ): NRCValidationResult {
   return {
     valid: false,
+    validationLevel: 'format',
     input,
     ...(segments && { segments }),
     error: { code, message, segment },
@@ -125,6 +126,7 @@ export function validateNRC(
 
   return {
     valid: true,
+    validationLevel: 'format',
     input,
     segments,
   }

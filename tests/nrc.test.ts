@@ -3,7 +3,9 @@ import { validateNRC, generateNRC } from '@/lib/nrc'
 
 describe('NRC Validator — format validation', () => {
   test('accepts a correctly structured NRC example', () => {
-    expect(validateNRC('613475/61/1').valid).toBe(true)
+    const result = validateNRC('613475/61/1')
+    expect(result.valid).toBe(true)
+    expect(result.validationLevel).toBe('format')
   })
 
   test('accepts all supported final digits', () => {

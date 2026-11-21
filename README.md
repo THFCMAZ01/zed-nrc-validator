@@ -24,7 +24,7 @@ The validator keeps the existing regular expression:
 /^\d{6}\/\d{2}\/[123]$/
 ~~~
 
-The expression checks syntax only. It does not establish that the number is genuine or issued.
+The expression checks syntax only. It does not establish that the number is genuine or issued. Both valid and invalid results include `validationLevel: "format"` so API consumers can distinguish syntax checks from any future registry-backed verification.
 
 ## District-code data
 

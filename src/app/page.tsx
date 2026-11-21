@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import Link from 'next/link'
 import { CONFIRMED_DISTRICT_CODES } from '@/data/districts'
 import type { NRCValidationResult } from '@/types/nrc.types'
 
@@ -96,7 +97,7 @@ export default function Home() {
   return (
     <div className="app-frame">
       <header className="site-header">
-        <a className="brand" href="/" aria-label="Zed NRC Validator home">
+        <Link className="brand" href="/" aria-label="Zed NRC Validator home">
           <span className="brand-mark" aria-hidden="true">Z</span>
           <span className="brand-copy">
             <span className="brand-overline">ZED / DEVELOPER TOOLS</span>

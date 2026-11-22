@@ -17,9 +17,9 @@ A guessed range is not a safe substitute for verified data. It could reject
 a legitimate code outside the range or give developers unwarranted confidence
 that a code inside the range is genuine.
 
-The current confirmed reference file contains only three mappings. It is
-useful as a small informational reference, but it is not an exhaustive
-validation dataset.
+The current observation file records 28 codes seen in public records. It
+contains no official place-name mapping and is neither complete nor an
+authoritative DNRPC dataset.
 
 ## Decision
 
@@ -28,12 +28,11 @@ validation dataset.
    official NRC rule.
 3. Keep the district-code segment syntactic: the format checker verifies that
    it contains exactly two digits.
-4. Keep the current district mapping informational only. A code missing from
-   it must be described as unverified by the project, not invalid.
+4. Keep public-record observations informational only. A code missing from
+   them must be described as unobserved, not invalid.
 5. Retain the legacy API `strict` boolean temporarily for compatibility, but
    deprecate it and make clear that it performs no extra checks.
-6. Do not infer the meaning of either digit from the three currently confirmed
-   mappings.
+6. Do not infer province or district meanings from the two-digit code.
 7. Do not assign legal or citizenship meanings to the final digit unless
    those meanings are supported by an appropriate primary source.
 
@@ -58,7 +57,7 @@ A future proposal must provide:
 - The current format validator continues to accept any two-digit district
   segment when the rest of the syntax matches.
 - The API does not claim that a district code exists or was issued.
-- The UI can show confirmed reference matches while identifying all other
-  codes as unverified by the project.
+- The UI can show whether a code was observed in the reviewed public records,
+  while stating that its official status and geographic meaning are unknown.
 - The previous provisional range proposal is archived as history and must
   not be implemented.

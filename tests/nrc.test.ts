@@ -8,23 +8,28 @@ describe('NRC Validator — format validation', () => {
     expect(result.validationLevel).toBe('format')
   })
 
-  test('accepts all supported final digits', () => {
-    for (const digit of ['1', '2', '3']) {
-      expect(validateNRC('000123/11/' + digit).valid).toBe(true)
+  test('accepts every single ASCII digit in the country-code position structurally', () => {
+    // This tests the observed structural pattern, not whether DNRPC has
+    // officially assigned each value to an NRC category.
+    for (const digit of ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
+      const result = validateNRC('000123/11/' + digit)
+      expect(result.valid).toBe(true)
+      if (result.valid) expect(result.segments.countryCode).toBe(digit)
     }
   })
 
-  test('preserves leading zeroes in the sequence and district code', () => {
-    const result = validateNRC('000001/11/1')
+  test('preserves leading zeroes in every segment', () => {
+    const result = validateNRC('000001/01/0')
     expect(result.valid).toBe(true)
     if (result.valid) {
       expect(result.segments.sequence).toBe('000001')
-      expect(result.segments.districtCode).toBe('11')
+      expect(result.segments.districtCode).toBe('01')
+      expect(result.segments.countryCode).toBe('0')
     }
   })
 
-  test('does not reject an unlisted district code', () => {
-    expect(validateNRC('613475/00/1').valid).toBe(true)
+  test('does not reject an unobserved district code', () => {
+    expect(validateNRC('613475/99/1').valid).toBe(true)
   })
 
   test('rejects whitespace around an otherwise valid NRC', () => {
@@ -80,12 +85,15 @@ describe('NRC Validator — format validation', () => {
   test('rejects a non-numeric district code', () => {
     const result = validateNRC('613475/6A/1')
     expect(result.valid).toBe(false)
-    if (!result.valid) expect(result.error.segment).toBe('districtCode')
+    if (!result.valid) {
+      expect(result.error.code).toBe('INVALID_FORMAT')
+      expect(result.error.segment).toBe('districtCode')
+    }
   })
 
-  test('rejects unsupported nationality digits', () => {
-    for (const digit of ['0', '4', '9', 'A']) {
-      expect(validateNRC('613475/61/' + digit).valid).toBe(false)
+  test('rejects a multi-character or non-numeric country-code segment', () => {
+    for (const suffix of ['', '10', 'A']) {
+      expect(validateNRC('613475/61/' + suffix).valid).toBe(false)
     }
   })
 
@@ -119,21 +127,21 @@ describe('NRC Validator — format validation', () => {
     if (!result.valid) expect(result.error.code).toBe('EMPTY_INPUT')
   })
 
-  test('legacy strict option remains format-only for unlisted codes', () => {
-    expect(validateNRC('613475/00/1', { strict: true }).valid).toBe(true)
+  test('legacy strict option remains format-only for unobserved codes', () => {
+    expect(validateNRC('613475/99/1', { strict: true }).valid).toBe(true)
   })
 })
 
 describe('NRC Generator', () => {
-  test('generates a sample that passes format validation', () => {
+  test('generates a synthetic sample that passes structural validation', () => {
     const generated = generateNRC()
     const result = validateNRC(generated.nrc)
     expect(result.valid).toBe(true)
     expect(generated.synthetic).toBe(true)
   })
 
-  test('uses a supported nationality digit', () => {
+  test('uses a single-digit country-code-shaped value', () => {
     const generated = generateNRC()
-    expect(['1', '2', '3']).toContain(String(generated.nationalityDigit))
+    expect(generated.countryCode).toMatch(/^[0-9]$/)
   })
 })

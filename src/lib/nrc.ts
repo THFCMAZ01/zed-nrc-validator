@@ -7,9 +7,10 @@ import type {
   NRCSegment,
 } from '../types/nrc.types'
 
-// Keep this expression focused on syntax only.
-// Six digits / two digits / one supported nationality digit.
-const NRC_REGEX = /^\d{6}\/\d{2}\/[123]$/
+// Structural validation only: six ASCII digits / two ASCII digits / one ASCII digit.
+// The final digit is called countryCode in Zambian Auditor General reports.
+// Its complete numeric assignment is not publicly specified.
+const NRC_REGEX = /^([0-9]{6})\/([0-9]{2})\/([0-9])$/
 
 function makeInvalid(
   input: string,
@@ -28,19 +29,17 @@ function makeInvalid(
 }
 
 /**
- * Checks the written structure of an NRC string.
+ * Checks the canonical written structure of an NRC string.
  *
  * This is format validation only. It does not confirm that a number was
  * issued, that its district code exists, or that it belongs to a person.
  * The legacy options argument remains accepted for compatibility; strict
- * has no effect until a complete, authoritative district dataset exists.
+ * has no effect until a complete, authoritative reference dataset exists.
  */
 export function validateNRC(
   input: string,
   _options: NRCValidateOptions = {}
 ): NRCValidationResult {
-  // The legacy options object remains part of the public signature, but it
-  // intentionally has no effect until district references can be verified.
   void _options
 
   if (input === null || input === undefined) {
@@ -53,19 +52,18 @@ export function validateNRC(
   }
 
   if (input.trim() === '') {
-    return makeInvalid(
-      input,
-      'EMPTY_INPUT',
-      'NRC input cannot be empty.',
-      'input'
-    )
+    return makeInvalid(input, 'EMPTY_INPUT', 'NRC input cannot be empty.', 'input')
   }
 
-  if (!NRC_REGEX.test(input) || input.length !== 11) {
+  // Match the complete string and capture each segment without converting
+  // to numbers, preserving significant leading zeroes.
+  const match = NRC_REGEX.exec(input)
+
+  if (!match || input.length !== 11) {
     const parts = input.split('/')
 
     if (parts.length === 3) {
-      const [sequence, district, nationality] = parts
+      const [sequence, districtCode, countryCode] = parts
 
       if (sequence.length !== 6) {
         return makeInvalid(
@@ -76,16 +74,16 @@ export function validateNRC(
         )
       }
 
-      if (!/^\d+$/.test(sequence)) {
+      if (!/^[0-9]{6}$/.test(sequence)) {
         return makeInvalid(
           input,
           'INVALID_FORMAT',
-          'The sequence segment must contain digits only.',
+          'The sequence segment must contain ASCII digits only.',
           'sequence'
         )
       }
 
-      if (district.length !== 2) {
+      if (districtCode.length !== 2) {
         return makeInvalid(
           input,
           'INVALID_FORMAT',
@@ -94,21 +92,21 @@ export function validateNRC(
         )
       }
 
-      if (!/^\d{2}$/.test(district)) {
+      if (!/^[0-9]{2}$/.test(districtCode)) {
         return makeInvalid(
           input,
           'INVALID_FORMAT',
-          'The district-code segment must contain digits only.',
+          'The district-code segment must contain ASCII digits only.',
           'districtCode'
         )
       }
 
-      if (!/^[123]$/.test(nationality)) {
+      if (countryCode.length !== 1 || !/^[0-9]$/.test(countryCode)) {
         return makeInvalid(
           input,
-          'INVALID_NATIONALITY_DIGIT',
-          'The final digit must be 1, 2, or 3.',
-          'nationalityDigit'
+          'INVALID_FORMAT',
+          'The country-code segment must contain exactly 1 ASCII digit.',
+          'countryCode'
         )
       }
     }
@@ -116,16 +114,15 @@ export function validateNRC(
     return makeInvalid(
       input,
       'INVALID_FORMAT',
-      'Expected 6 digits, a slash, 2 digits, a slash, and a final digit of 1, 2, or 3.',
+      'Expected 6 ASCII digits, a slash, 2 ASCII digits, a slash, and 1 ASCII digit.',
       'input'
     )
   }
 
-  const parts = input.split('/')
   const segments: NRCSegments = {
-    sequence: parts[0],
-    districtCode: parts[1],
-    nationalityDigit: parts[2],
+    sequence: match[1],
+    districtCode: match[2],
+    countryCode: match[3],
   }
 
   return {
@@ -144,12 +141,12 @@ export function validateNRC(
 export function generateNRC(): NRCGenerateResult {
   const sequence = Math.floor(Math.random() * 900000 + 100000).toString()
   const districtCode = '61'
-  const nationalityDigit: 1 | 2 | 3 = 1
+  const countryCode = '1'
 
   return {
-    nrc: sequence + '/' + districtCode + '/' + nationalityDigit,
+    nrc: sequence + '/' + districtCode + '/' + countryCode,
     districtCode,
-    nationalityDigit,
+    countryCode,
     synthetic: true,
   }
 }

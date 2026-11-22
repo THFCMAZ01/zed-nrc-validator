@@ -3,19 +3,17 @@ export type NRCErrorCode =
   | 'EMPTY_INPUT'
   | 'INVALID_FORMAT'
   | 'INVALID_SEQUENCE_LENGTH'
-  | 'INVALID_NATIONALITY_DIGIT'
-  | 'UNKNOWN_DISTRICT_CODE'
 
 export type NRCSegment =
   | 'input'
   | 'sequence'
   | 'districtCode'
-  | 'nationalityDigit'
+  | 'countryCode'
 
 export interface NRCSegments {
   sequence: string
   districtCode: string
-  nationalityDigit: string
+  countryCode: string
 }
 
 export interface NRCValidationError {
@@ -51,7 +49,7 @@ export interface NRCValidateOptions {
 export interface NRCGenerateResult {
   nrc: string
   districtCode: string
-  nationalityDigit: 1 | 2 | 3
+  countryCode: string
   synthetic: true
 }
 

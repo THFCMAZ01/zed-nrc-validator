@@ -154,9 +154,10 @@ describe('GET reference and sample endpoints', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.total_confirmed).toBe(3)
-    expect(body.dataset_status).toBe('partial')
-    expect(body.districts['11']).toContain('Lusaka')
+    expect(body.total_observed).toBe(28)
+    expect(body.dataset_status).toBe('observational_partial')
+    expect(body.official_dnrpc_directory).toBe(false)
+    expect(body.observed_codes.some((entry: { code: string }) => entry.code === '15')).toBe(true)
   })
 
   test('generator returns a synthetic sample and prevents caching', async () => {
@@ -165,7 +166,7 @@ describe('GET reference and sample endpoints', () => {
 
     expect(response.status).toBe(200)
     expect(body.synthetic).toBe(true)
-    expect(body.nrc).toMatch(/^\d{6}\/\d{2}\/[123]$/)
+    expect(body.nrc).toMatch(/^\d{6}\/\d{2}\/[0-9]$/)
     expect(response.headers.get('cache-control')).toBe('no-store')
   })
 })

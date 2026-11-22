@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
-import { CONFIRMED_DISTRICT_CODES } from '@/data/districts'
+import { OBSERVED_DISTRICT_CODES } from '@/data/districts'
 import type { NRCValidationResult } from '@/types/nrc.types'
 
 export default function Home() {
@@ -227,7 +227,7 @@ export default function Home() {
                         <strong>{result.segments.districtCode}</strong>
                       </div>
                       <div className="segment-item">
-                        <span>FINAL DIGIT</span>
+                        <span>COUNTRY CODE</span>
                         <strong>{result.segments.nationalityDigit}</strong>
                       </div>
                     </div>
@@ -236,8 +236,9 @@ export default function Home() {
                       <div>
                         <dt>District reference</dt>
                         <dd>
-                          {CONFIRMED_DISTRICT_CODES[result.segments.districtCode] ??
-                            'Not in the confirmed reference list'}
+                          {OBSERVED_DISTRICT_CODES.some((entry) => entry.code === result.segments.districtCode)
+                            ? 'Observed in public records; official mapping unverified'
+                            : 'Not observed in the partial public-record list'}
                         </dd>
                       </div>
                     </dl>
@@ -295,7 +296,7 @@ export default function Home() {
                 <span className="legend-number">03</span>
                 <div>
                   <strong>Nationality digit</strong>
-                  <p>1, 2, or 3</p>
+                  <p>Any single ASCII digit</p>
                 </div>
               </div>
             </div>
@@ -304,11 +305,10 @@ export default function Home() {
               <p className="section-index">DISTRICT DATA</p>
               <strong>Reference list is incomplete</strong>
               <p>
-                Three district-code references are currently confirmed. Other
-                two-digit codes are left unclassified, not rejected.
+                Public-record observations are incomplete and have no verified place-name mappings. Unknown codes are not rejected.
               </p>
               <a href="/api/districts" target="_blank" rel="noreferrer">
-                Inspect the reference data <span aria-hidden="true">↗</span>
+                Inspect observed codes <span aria-hidden="true">↗</span>
               </a>
             </div>
 

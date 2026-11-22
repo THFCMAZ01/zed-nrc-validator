@@ -228,7 +228,7 @@ export default function Home() {
                       </div>
                       <div className="segment-item">
                         <span>COUNTRY CODE</span>
-                        <strong>{result.segments.nationalityDigit}</strong>
+                        <strong>{result.segments.countryCode}</strong>
                       </div>
                     </div>
 
@@ -295,7 +295,7 @@ export default function Home() {
               <div>
                 <span className="legend-number">03</span>
                 <div>
-                  <strong>Nationality digit</strong>
+                  <strong>Country code</strong>
                   <p>Any single ASCII digit</p>
                 </div>
               </div>

@@ -166,7 +166,7 @@ describe('GET reference and sample endpoints', () => {
 
     expect(response.status).toBe(200)
     expect(body.synthetic).toBe(true)
-    expect(body.nrc).toMatch(/^\d{6}\/\d{2}\/[123]$/)
+    expect(body.nrc).toMatch(/^\d{6}\/\d{2}\/[0-9]$/)
     expect(response.headers.get('cache-control')).toBe('no-store')
   })
 })

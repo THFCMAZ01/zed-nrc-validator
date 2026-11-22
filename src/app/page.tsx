@@ -351,7 +351,7 @@ export default function Home() {
             <a href="/api/districts" className="endpoint-row">
               <span className="http-method method-get">GET</span>
               <code>/api/districts</code>
-              <span className="endpoint-description">Read confirmed references</span>
+              <span className="endpoint-description">Read observed codes</span>
               <span className="endpoint-arrow" aria-hidden="true">↗</span>
             </a>
           </div>
